@@ -1,10 +1,16 @@
 const functions = require('firebase-functions');
 const {dialogflow} = require('actions-on-google');
+const admin = require('firebase-admin');
+admin.initializeApp();
+
+const firebaseRef = admin.database().ref('/');
 
 app = dialogflow();
 
-app.intent('query-intent', (conv, {param}) => {
-    conv.close(`Response from my fullfillment: ${param}`);
+app.intent('query-intent', async (conv, {param}) => {
+    const snapshot = await firebaseRef.child('temperature').once('value');
+    const snapshotVal = snapshot.val()
+    conv.close(`temperature is: ${snapshotVal}`);
 });
 
 app.intent('set-climate-intent', (conv, {temperature}) => {
