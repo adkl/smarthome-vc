@@ -1,3 +1,5 @@
+const queryIntent = require("./intents/queryIntent");
+
 const functions = require('firebase-functions');
 const {dialogflow} = require('actions-on-google');
 const admin = require('firebase-admin');
@@ -8,10 +10,7 @@ const dbRoot = admin.database().ref('/');
 app = dialogflow();
 
 app.intent('query-intent', async (conv, {param}) => {
-    // return processQueryIntent(conv, param);
-    const snapshot = await dbRoot.child('temperature').once('value');
-    const snapshotVal = snapshot.val()
-    conv.close(`emperature is: ${snapshotVal}`);
+    return queryIntent.processQueryIntent(dbRoot, conv, param);
 });
 
 app.intent('set-climate-intent', (conv, {temperature}) => {
