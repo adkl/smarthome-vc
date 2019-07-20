@@ -1,4 +1,5 @@
 const queryIntent = require("./intents/queryIntent");
+const onOffIntent = require('./intents/onOffIntent');
 
 const functions = require('firebase-functions');
 const {dialogflow} = require('actions-on-google');
@@ -48,8 +49,7 @@ app.intent('set-intent', (conv, {thing, value}) => {
 });
 
 app.intent('on-off-intent', (conv, {thing, smarthome_toggle}) => {
-    // return processOnOffIntent(conv, thing, smarthome_toggle);
-    conv.close(`${thing} successfully toggled to ${smarthome_toggle}`)
+    onOffIntent.processOnOffIntent(dbRoot, conv, thing, smarthome_toggle);
 });
 
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest(app);
