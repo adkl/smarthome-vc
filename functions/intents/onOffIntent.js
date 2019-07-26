@@ -14,10 +14,10 @@ function parseClimateToggleInput(climateToggle) {
     const climateOnPhrases = ['turn on', 'switch on'];
     const climateOffPhrases = ['turn off', 'switch off', 'shut down'];
 
-    if (climateOffPhrases.indexOf(climateToggle.toLowerCase()) !== -1) {
+    if (climateOnPhrases.indexOf(climateToggle.toLowerCase()) !== -1) {
         return true;
     }
-    else if (climateOnPhrases.indexOf(climateToggle.toLowerCase()) !== -1) {
+    else if (climateOffPhrases.indexOf(climateToggle.toLowerCase()) !== -1) {
         return false;
     }
     return undefined;
