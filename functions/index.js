@@ -48,8 +48,8 @@ app.intent('set-intent', (conv, {thing, value}) => {
     });
 });
 
-app.intent('on-off-intent', (conv, {thing, smarthome_toggle}) => {
-    onOffIntent.processOnOffIntent(dbRoot, conv, thing, smarthome_toggle);
+app.intent('on-off-intent', async (conv, {thing, smarthome_toggle}) => {
+    await onOffIntent.processOnOffIntent(dbRoot, conv, thing, smarthome_toggle);
 });
 
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest(app);

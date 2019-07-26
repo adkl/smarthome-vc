@@ -1,10 +1,10 @@
-function processOnOffIntent(dbRoot, conv, thing, smarthome_toggle) {
-    switch (thing) {
+async function processOnOffIntent(dbRoot, conv, thing, smarthome_toggle) {
+    switch (thing.toLowerCase()) {
         case "air conditioning":
-            processClimateToggle(dbRoot, conv, smarthome_toggle);
+            await processClimateToggle(dbRoot, conv, smarthome_toggle);
             break;
         case "windows":
-            processWindowsToggle();
+            await processWindowsToggle();
             break;
     }
     conv.ask(`${thing} successfully toggled to ${smarthome_toggle}`)
@@ -30,7 +30,7 @@ function resolveClimateStatus(climateStatus) {
 async function processClimateToggle(dbRoot, conv, climate_toggle) {
     const snapshot = await dbRoot.child('users/user-id-1234/air-condition-status').once('value');
     const currentClimateStatus = snapshot.val();
-    const requestedClimateStatus = parseClimateToggleInput(smarthome_toggle);
+    const requestedClimateStatus = parseClimateToggleInput(climate_toggle);
 
     if (requestedClimateStatus === undefined) {
         conv.ask(`I can't understand this. Please try to be more precise.`);
@@ -39,11 +39,19 @@ async function processClimateToggle(dbRoot, conv, climate_toggle) {
         conv.ask(`The air conditioner is already ${resolveClimateStatus(currentClimateStatus)}.`)
     }
     else {
-        // push to tasks queue TODO
+        dbRoot.child('users/user-id-1234/tasks').push({
+            taskId: 'taskId',
+            taskSpec: 'onOff',
+            payload: {
+                toggle: requestedClimateStatus,
+                whatToToggle: "climate"
+            }
+        });
+        conv.ask("Task pushed...s")
     }
 }
 
-function processWindowsToggle() {
+async function processWindowsToggle() {
 
 }
 
