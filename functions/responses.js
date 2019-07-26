@@ -7,3 +7,5 @@ function humidityResponse(humidity) {
 function genericErrorResponse() {
     return "There is an error in contacting the smart home controller."
 }
+
+exports.genericErrorResponse = genericErrorResponse;

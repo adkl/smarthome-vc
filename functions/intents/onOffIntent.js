@@ -1,3 +1,5 @@
+const responses = require('../responses');
+
 async function processOnOffIntent(dbRoot, conv, thing, smarthome_toggle) {
     switch (thing.toLowerCase()) {
         case "air conditioning":
@@ -7,7 +9,6 @@ async function processOnOffIntent(dbRoot, conv, thing, smarthome_toggle) {
             await processWindowsToggle();
             break;
     }
-    conv.ask(`${thing} successfully toggled to ${smarthome_toggle}`)
 }
 
 function parseClimateToggleInput(climateToggle) {
@@ -39,7 +40,7 @@ async function processClimateToggle(dbRoot, conv, climate_toggle) {
         conv.ask(`The air conditioner is already ${resolveClimateStatus(currentClimateStatus)}.`)
     }
     else {
-        dbRoot.child('users/user-id-1234/tasks').push({
+        const taskRef = await dbRoot.child('users/user-id-1234/tasks').push({
             taskId: 'taskId',
             taskSpec: 'onOff',
             payload: {
@@ -47,7 +48,24 @@ async function processClimateToggle(dbRoot, conv, climate_toggle) {
                 whatToToggle: "climate"
             }
         });
-        conv.ask("Task pushed...s")
+        conv.ask('task pushed');
+        return new Promise(function(resolve, reject) {
+            setTimeout(function() {
+                conv.ask(responses.genericErrorResponse());
+                resolve();
+            }, 3000);
+
+            dbRoot.child(`users/user-id-1234/completed-tasks/${taskRef.key}`).on(
+                'value',
+                function (snapshot) {
+                    if (snapshot.exists()) {
+                        conv.ask('response from raspberry received');
+                        resolve()
+                    }
+                }
+            )
+
+        });
     }
 }
 
