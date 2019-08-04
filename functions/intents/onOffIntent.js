@@ -57,6 +57,7 @@ async function processClimateToggle(dbRoot, conv, climate_toggle) {
                 'value',
                 function (snapshot) {
                     if (snapshot.exists() && snapshot.val().success) {
+                        dbRoot.child('users/user-id-1234/air-condition-status').set(requestedClimateStatus);
                         conv.ask(`Okay, the air conditioner is ${resolveClimateStatus(requestedClimateStatus)} now.`);
                         resolve()
                     }
