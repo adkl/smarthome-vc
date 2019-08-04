@@ -6,7 +6,7 @@ async function processOnOffIntent(dbRoot, conv, thing, smarthome_toggle) {
             await processClimateToggle(dbRoot, conv, smarthome_toggle);
             break;
         case "windows":
-            await processWindowsToggle();
+            await processWindowsToggle(dbRoot, conv, smarthome_toggle);
             break;
     }
 }
@@ -41,14 +41,12 @@ async function processClimateToggle(dbRoot, conv, climate_toggle) {
     }
     else {
         const taskRef = await dbRoot.child('users/user-id-1234/tasks').push({
-            taskId: 'taskId',
             taskSpec: 'onOff',
             payload: {
                 toggle: requestedClimateStatus,
                 whatToToggle: "climate"
             }
         });
-        conv.ask('task pushed');
         return new Promise(function(resolve, reject) {
             setTimeout(function() {
                 conv.ask(responses.genericErrorResponse());
@@ -58,13 +56,16 @@ async function processClimateToggle(dbRoot, conv, climate_toggle) {
             dbRoot.child(`users/user-id-1234/completed-tasks/${taskRef.key}`).on(
                 'value',
                 function (snapshot) {
-                    if (snapshot.exists()) {
-                        conv.ask('response from raspberry received');
+                    if (snapshot.exists() && snapshot.val().success) {
+                        conv.ask(`Okay, the air conditioner is ${resolveClimateStatus(requestedClimateStatus)} now.`);
+                        resolve()
+                    }
+                    else if (snapshot.exists() && !snapshot.val().success) {
+                        conv.ask(responses.genericErrorResponse());
                         resolve()
                     }
                 }
             )
-
         });
     }
 }
