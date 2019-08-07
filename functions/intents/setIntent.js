@@ -15,12 +15,25 @@ function postProcessSetIntent(thing, value) {
     }
 }
 
+function parseSetThing(thing) {
+    const climatePhrases = ['air conditioning', 'air conditioner'];
+    if (climatePhrases.indexOf(thing.toLowerCase()) !== -1) {
+        return "climate";
+    }
+    return undefined;
+}
+
 async function processSetIntent(conv, thing, value) {
     let dbRoot = configuration.Configuration.getUserDbRoot();
+    const whatToSet = parseSetThing(thing);
+
+    if (whatToSet === undefined) {
+        conv.ask(`I can't understand this. Please try to say more precisely.`)
+    }
     const taskRef = await dbRoot.child(`tasks`).push({
         taskSpec: "set",
         payload: {
-            thing: thing,
+            whatToSet: whatToSet,
             value: value
         }
     });
