@@ -17,10 +17,6 @@ app.intent('query-intent', async (conv, {param}) => {
     return queryIntent.processQueryIntent(dbRoot, conv, param);
 });
 
-app.intent('set-climate-intent', (conv, {temperature}) => {
-    conv.close(` not implemented Air conditioning device successfully set to ${temperature.amount}`)
-});
-
 app.intent('set-intent', async (conv, {thing, value}) => {
     configuration.Configuration.setUserId("user-id-1234");
     configuration.Configuration.setUserDbRoot(dbRoot);
@@ -29,7 +25,9 @@ app.intent('set-intent', async (conv, {thing, value}) => {
 });
 
 app.intent('on-off-intent', async (conv, {thing, smarthome_toggle}) => {
-    await onOffIntent.processOnOffIntent(dbRoot, conv, thing, smarthome_toggle);
+    configuration.Configuration.setUserId("user-id-1234");
+    configuration.Configuration.setUserDbRoot(dbRoot);
+    await onOffIntent.processOnOffIntent(conv, thing, smarthome_toggle);
 });
 
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest(app);

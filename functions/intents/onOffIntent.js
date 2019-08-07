@@ -1,12 +1,13 @@
 const responses = require('../responses');
+const configuration = require('../configuration');
 
-async function processOnOffIntent(dbRoot, conv, thing, smarthome_toggle) {
+async function processOnOffIntent(conv, thing, smarthome_toggle) {
     switch (thing.toLowerCase()) {
         case "air conditioning":
-            await processClimateToggle(dbRoot, conv, smarthome_toggle);
+            await processClimateToggle(conv, smarthome_toggle);
             break;
         case "windows":
-            await processWindowsToggle(dbRoot, conv, smarthome_toggle);
+            await processWindowsToggle(conv, smarthome_toggle);
             break;
     }
 }
@@ -28,8 +29,9 @@ function resolveClimateStatus(climateStatus) {
     return (climateStatus === true) ? "on": "turned off"
 }
 
-async function processClimateToggle(dbRoot, conv, climate_toggle) {
-    const snapshot = await dbRoot.child('users/user-id-1234/air-condition-status').once('value');
+async function processClimateToggle(conv, climate_toggle) {
+    const dbRoot = configuration.Configuration.getUserDbRoot();
+    const snapshot = await dbRoot.child('air-condition-status').once('value');
     const currentClimateStatus = snapshot.val();
     const requestedClimateStatus = parseClimateToggleInput(climate_toggle);
 
@@ -40,7 +42,7 @@ async function processClimateToggle(dbRoot, conv, climate_toggle) {
         conv.ask(`The air conditioner is already ${resolveClimateStatus(currentClimateStatus)}.`)
     }
     else {
-        const taskRef = await dbRoot.child('users/user-id-1234/tasks').push({
+        const taskRef = await dbRoot.child('tasks').push({
             taskSpec: 'onOff',
             payload: {
                 toggle: requestedClimateStatus,
@@ -53,11 +55,11 @@ async function processClimateToggle(dbRoot, conv, climate_toggle) {
                 resolve();
             }, 3000);
 
-            dbRoot.child(`users/user-id-1234/completed-tasks/${taskRef.key}`).on(
+            dbRoot.child(`completed-tasks/${taskRef.key}`).on(
                 'value',
                 function (snapshot) {
                     if (snapshot.exists() && snapshot.val().success) {
-                        dbRoot.child('users/user-id-1234/air-condition-status').set(requestedClimateStatus);
+                        dbRoot.child('air-condition-status').set(requestedClimateStatus);
                         conv.ask(`Okay, the air conditioner is ${resolveClimateStatus(requestedClimateStatus)} now.`);
                         resolve()
                     }
@@ -71,8 +73,62 @@ async function processClimateToggle(dbRoot, conv, climate_toggle) {
     }
 }
 
-async function processWindowsToggle() {
+function parseWindowsToggleInput(windows_toggle) {
+    if (windows_toggle === "open") {
+        return true;
+    }
+    else if (windows_toggle === "close") {
+        return false;
+    }
+    return undefined;
+}
 
+function resolveWindowsStatus(requestedWindowsStatus) {
+    return requestedWindowsStatus ? "open" : "closed"
+}
+
+async function processWindowsToggle(conv, windows_toggle) {
+    const dbRoot = configuration.Configuration.getUserDbRoot();
+    const snapshot = await dbRoot.child('windows').once('value');
+    const currentWindowsStatus = snapshot.val();
+    const requestedWindowsStatus = parseWindowsToggleInput(windows_toggle);
+
+    if (requestedWindowsStatus === undefined) {
+        conv.ask(`I can't understand this. Please try to be more precise.`);
+    }
+    if (currentWindowsStatus === windows_toggle) {
+        conv.ask(`Windows are already ${resolveWindowsStatus(currentWindowsStatus)}.`);
+    }
+    else {
+        const taskRef = await dbRoot.child("tasks").push({
+            taskSpec: 'onOff',
+            payload: {
+                toggle: requestedWindowsStatus,
+                whatToToggle: "windows"
+            }
+        });
+        return new Promise(function(resolve, reject) {
+            setTimeout(function() {
+                conv.ask(responses.genericErrorResponse());
+                resolve();
+            }, 3000);
+
+            dbRoot.child(`completed-tasks/${taskRef.key}`).on(
+                'value',
+                function (snapshot) {
+                    if (snapshot.exists() && snapshot.val().success) {
+                        dbRoot.child('windows').set(requestedWindowsStatus);
+                        conv.ask(`Okay, windows are ${resolveWindowsStatus(requestedWindowsStatus)} now.`);
+                        resolve()
+                    }
+                    else if (snapshot.exists() && !snapshot.val().success) {
+                        conv.ask(responses.genericErrorResponse());
+                        resolve()
+                    }
+                }
+            )
+        });
+    }
 }
 
 exports.processOnOffIntent = processOnOffIntent;
