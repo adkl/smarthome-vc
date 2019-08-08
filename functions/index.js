@@ -14,7 +14,9 @@ const dbRoot = admin.database().ref('/');
 app = dialogflow();
 
 app.intent('query-intent', async (conv, {param}) => {
-    return queryIntent.processQueryIntent(dbRoot, conv, param);
+    configuration.Configuration.setUserId("user-id-1234");
+    configuration.Configuration.setUserDbRoot(dbRoot);
+    return queryIntent.processQueryIntent(conv, param);
 });
 
 app.intent('set-intent', async (conv, {thing, value}) => {

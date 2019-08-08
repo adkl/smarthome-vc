@@ -1,4 +1,7 @@
-async function processQueryIntent(dbRoot, conv, query_item) {
+const configuration = require('../configuration');
+
+async function processQueryIntent(conv, query_item) {
+    dbRoot = configuration.Configuration.getUserDbRoot();
     switch (query_item) {
         case "temperature":
             const temperature = await getCurrentTemperature(dbRoot);
@@ -15,12 +18,12 @@ async function processQueryIntent(dbRoot, conv, query_item) {
 }
 
 async function getCurrentTemperature(dbRoot) {
-    const snapshot = await dbRoot.child(`users/user-id-1234/temperature`).once('value');
+    const snapshot = await dbRoot.child(`temperature`).once('value');
     return snapshot.val();
 }
 
 async function getCurrentHumidity(dbRoot) {
-    const snapshot = await dbRoot.child(`users/user-id-1234/humidity`).once('value');
+    const snapshot = await dbRoot.child(`humidity`).once('value');
     return snapshot.val();
 }
 
