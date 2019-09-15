@@ -1,3 +1,5 @@
+const sha256 = require('js-sha256');
+
 class Configuration {
     constructor() {
         this.userId = null;
@@ -5,19 +7,11 @@ class Configuration {
     }
 
     static setUserId(userId) {
-        this.userId = userId;
-    }
-    static getUserId() {
-        return this.userId;
+        this.userId = sha256(userId);
     }
 
     static setUserDbRoot(dbRoot) {
-        if (this.userId === null) {
-            // error
-        }
-        else {
-            this.userDbRoot = dbRoot.child(`users/${this.userId}`)
-        }
+        this.userDbRoot = dbRoot.child(`users/${this.userId}`)
     }
     static getUserDbRoot() {
         return this.userDbRoot;
