@@ -1,3 +1,5 @@
+var sha256 = require('js-sha256');
+
 class Configuration {
     constructor() {
         this.userId = null;
@@ -5,7 +7,7 @@ class Configuration {
     }
 
     static setUserId(userId) {
-        this.userId = userId;
+        this.userId = sha256(userId);
     }
     static getUserId() {
         return this.userId;
@@ -21,6 +23,9 @@ class Configuration {
     }
     static getUserDbRoot() {
         return this.userDbRoot;
+    }
+    static getAppClientId() {
+
     }
 }
 
