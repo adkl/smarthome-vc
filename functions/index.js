@@ -1,6 +1,7 @@
 const queryIntent = require("./intents/queryIntent");
 const onOffIntent = require('./intents/onOffIntent');
 const setIntent = require('./intents/setIntent');
+const clientId = require('../client_id');
 
 const configuration = require('./configuration');
 
@@ -12,15 +13,13 @@ admin.initializeApp();
 const dbRoot = admin.database().ref('/');
 
 app = dialogflow({
-    clientId: "997646807349-05o8f5ogecltddoa5m79lj73upc1uup2.apps.googleusercontent.com"
+    clientId: clientId['clientId']
 });
 
 app.intent('query-intent', async (conv, {param}) => {
     if (undefined === conv.user.email) {
-        return conv.ask(new SignIn()); // Korisnik nije autentificiran
+        return conv.ask(new SignIn()); // Ask Google to authenticate a user
     }
-    // Korisnik je autentificiran, biblioteka sama obavlja dekodiranje i
-    // verifikaciju ID tokena, te je email dostupan kroz conv.user objekat
     configuration.Configuration.setUserId(conv.user.email);
     configuration.Configuration.setUserDbRoot(dbRoot);
     return queryIntent.processQueryIntent(conv, param);
@@ -28,9 +27,8 @@ app.intent('query-intent', async (conv, {param}) => {
 
 app.intent('set-intent', async (conv, {thing, value}) => {
     if (undefined === conv.user.email) {
-        return conv.ask(new SignIn());
+        return conv.ask(new SignIn()); // Ask Google to authenticate a user
     }
-
     configuration.Configuration.setUserId(conv.user.email);
     configuration.Configuration.setUserDbRoot(dbRoot);
     await setIntent.processSetIntent(conv, thing, value);
@@ -38,9 +36,8 @@ app.intent('set-intent', async (conv, {thing, value}) => {
 
 app.intent('on-off-intent', async (conv, {thing, smarthome_toggle}) => {
     if (undefined === conv.user.email) {
-        return conv.ask(new SignIn());
+        return conv.ask(new SignIn()); // Ask Google to authenticate a user
     }
-
     configuration.Configuration.setUserId(conv.user.email);
     configuration.Configuration.setUserDbRoot(dbRoot);
     await onOffIntent.processOnOffIntent(conv, thing, smarthome_toggle);
